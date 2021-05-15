@@ -1,7 +1,6 @@
 package ru.rshb;
 
 
-import freemarker.cache.TemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -18,7 +17,7 @@ public class ScriptGenerator {
 
 	private String outputFolder;
 
-	private String outputFile;
+	private String outputFileName;
 
 	private String tableName;
 
@@ -30,10 +29,10 @@ public class ScriptGenerator {
 
 	private final Configuration freeMarkerConfig = new Configuration(Configuration.VERSION_2_3_31);
 
-	public void generate() {
+	public String generate() {
 		createFile();
 
-		try (Writer out = new OutputStreamWriter(new FileOutputStream(outputFile))) {
+		try (Writer out = new OutputStreamWriter(new FileOutputStream(outputFileName))) {
 
 			configFreeMarker();
 
@@ -43,6 +42,8 @@ public class ScriptGenerator {
 		} catch (IOException | TemplateException e) {
 			throw new CustomException("ОШИБКА СОЗДАНИЯ СКРИПТА.", e);
 		}
+
+		return outputFileName;
 	}
 
 	private Map<String, Object> createModel() {
@@ -56,18 +57,18 @@ public class ScriptGenerator {
 	}
 
 	private void createFile() {
-		try{
-			System.out.println(outputFile);
-			new File(outputFile).createNewFile();
+		try {
+			System.out.println(outputFileName);
+			new File(outputFileName).createNewFile();
 		} catch (IOException e) {
 			throw new CustomException("ОШИБКА СОЗДАНИЯ ФАЙЛА.", e);
 		}
 	}
 
 	private void configFreeMarker() throws IOException {
-		String r = new File(ScriptGenerator.class.getClassLoader().getResource(TEMPLATE_NAME).getFile()).getParent();
-		System.out.println(r);
-	freeMarkerConfig.setDirectoryForTemplateLoading(new File(r));
+		String resourceFolderPath =
+				new File(ScriptGenerator.class.getClassLoader().getResource(TEMPLATE_NAME).getFile()).getParent();
+		freeMarkerConfig.setDirectoryForTemplateLoading(new File(resourceFolderPath));
 		freeMarkerConfig.setDefaultEncoding("UTF-8");
 	}
 
@@ -102,7 +103,7 @@ public class ScriptGenerator {
 		}
 
 		public ScriptGenerator build() {
-			ScriptGenerator.this.outputFile = ScriptGenerator.this.outputFolder + ScriptGenerator.this.tableName + ".sql";
+			ScriptGenerator.this.outputFileName = ScriptGenerator.this.outputFolder + ScriptGenerator.this.tableName + ".sql";
 			return ScriptGenerator.this;
 		}
 

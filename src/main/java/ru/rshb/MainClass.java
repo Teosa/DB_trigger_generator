@@ -52,13 +52,15 @@ public class MainClass {
 			List<String> lines = parser.parse();
 			List<String> columnNames = parser.getColumnNames(lines);
 
-			ScriptGenerator.newBuilder()
+			String output = ScriptGenerator.newBuilder()
 					.setColumns(columnNames)
 					.setColumnsWithTypes(lines)
 					.setOutputFolder(outputPath)
 					.setTableName(tableName)
 					.build()
 					.generate();
+
+			System.out.println("СГЕНЕРИРОВАН ФАЙЛ " + output);
 		} catch (CustomException e) {
 			log.error(e.getMessage(), e);
 			e.print();
