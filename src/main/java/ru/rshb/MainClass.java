@@ -16,51 +16,18 @@ public class MainClass {
 
 	public static void main(String[] args) {
 		try {
-			String filePath = args[0];
+			String path = args[0];
 
-			if (filePath == null || filePath.trim().length() == 0) {
-				System.out.println("ОШИБКА. НЕОБХОДИМО УКАЗАТЬ ПУТЬ К ФАЙЛУ.");
+			if (path == null || path.trim().length() == 0) {
+				System.out.println("ОШИБКА. НЕОБХОДИМО УКАЗАТЬ ПУТЬ К ФАЙЛУ ИЛИ ПАПКЕ.");
 				return;
 			}
 
-			filePath = filePath.replace("\\", "/");
-
-			Matcher outputFolderMatcher = outputFolderPath.matcher(filePath);
-			Matcher tableNameMatcher = tableNamePattern.matcher(filePath);
-
-			if (!outputFolderMatcher.find()) {
-				System.out.println("ОШИБКА. НЕ УДАЛОСЬ ОПРЕДЕЛИТЬ ПУТЬ.");
-				return;
+			if(path.contains(".txt")) {
+				operateFile(path);
+			} else {
+				operateFolder(path);
 			}
-
-			if (!tableNameMatcher.find()) {
-				System.out.println("ОШИБКА. НЕ УДАЛОСЬ ОПРЕДЕЛИТЬ НАЗВАНИЕ ТАБЛИЦЫ.");
-				return;
-			}
-
-			String outputPath = outputFolderMatcher.group(0) + "/";
-			String tableName = tableNameMatcher.group(0);
-
-			File file = new File(filePath);
-
-			if (!file.exists()) {
-				System.out.println("ОШИБКА. НЕ УДАЛОСЬ НАЙТИ ФАЙЛ " + filePath + ".");
-				return;
-			}
-
-			FileParser parser = new FileParser(file);
-			List<String> lines = parser.parse();
-			List<String> columnNames = parser.getColumnNames(lines);
-
-			String output = ScriptGenerator.newBuilder()
-					.setColumns(columnNames)
-					.setColumnsWithTypes(lines)
-					.setOutputFolder(outputPath)
-					.setTableName(tableName)
-					.build()
-					.generate();
-
-			System.out.println("СГЕНЕРИРОВАН ФАЙЛ " + output);
 		} catch (CustomException e) {
 			log.error(e.getMessage(), e);
 			e.print();
@@ -68,6 +35,55 @@ public class MainClass {
 			log.error(e.getMessage(), e);
 			System.out.println(e.getMessage());
 		}
+	}
+
+	private static void  operateFolder(String folderPath) {
+		File folder = new File(folderPath);
+
+		for(File file : folder.listFiles()) {
+			if(file.getPath().contains(".txt")) {
+				operateFile(file.getPath());
+			}
+		}
+	}
+
+	private static void  operateFile(String filePath) {
+		filePath = filePath.replace("\\", "/");
+
+		Matcher outputFolderMatcher = outputFolderPath.matcher(filePath);
+		Matcher tableNameMatcher = tableNamePattern.matcher(filePath);
+
+		if (!outputFolderMatcher.find()) {
+			System.out.println("ОШИБКА. НЕ УДАЛОСЬ ОПРЕДЕЛИТЬ ПУТЬ.");
+			return;
+		}
+
+		if (!tableNameMatcher.find()) {
+			System.out.println("ОШИБКА. НЕ УДАЛОСЬ ОПРЕДЕЛИТЬ НАЗВАНИЕ ТАБЛИЦЫ.");
+			return;
+		}
+
+		String outputPath = outputFolderMatcher.group(0) + "/";
+		String tableName = tableNameMatcher.group(0);
+
+		File file = new File(filePath);
+
+		if (!file.exists()) {
+			System.out.println("ОШИБКА. НЕ УДАЛОСЬ НАЙТИ ФАЙЛ " + filePath + ".");
+			return;
+		}
+
+		FileParser parser = new FileParser(file);
+		List<TableColumnType> columns = parser.processLines(parser.parse());
+
+		String output = ScriptGenerator.newBuilder()
+				.setColumns(columns)
+				.setOutputFolder(outputPath)
+				.setTableName(tableName)
+				.build()
+				.generate();
+
+		System.out.println("СГЕНЕРИРОВАН ФАЙЛ " + output);
 	}
 
 }

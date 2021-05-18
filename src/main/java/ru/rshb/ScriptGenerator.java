@@ -11,6 +11,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class ScriptGenerator {
@@ -21,9 +22,7 @@ public class ScriptGenerator {
 
 	private String tableName;
 
-	private List<String> columnsWithTypes;
-
-	private List<String> columns;
+	private List<TableColumnType> columns;
 
 	private final static String TEMPLATE_NAME = "script_pattern.ftl";
 
@@ -49,8 +48,7 @@ public class ScriptGenerator {
 	private Map<String, Object> createModel() {
 		Map<String, Object> model = new HashMap<>();
 
-		model.put("tableName", tableName);
-		model.put("columnsWithTypes", columnsWithTypes);
+		model.put("tableName", tableName.toLowerCase(Locale.ROOT));
 		model.put("columns", columns);
 
 		return model;
@@ -58,7 +56,6 @@ public class ScriptGenerator {
 
 	private void createFile() {
 		try {
-			System.out.println(outputFileName);
 			new File(outputFileName).createNewFile();
 		} catch (IOException e) {
 			throw new CustomException("ОШИБКА СОЗДАНИЯ ФАЙЛА.", e);
@@ -92,12 +89,7 @@ public class ScriptGenerator {
 			return this;
 		}
 
-		public Builder setColumnsWithTypes(List<String> columnsWithTypes) {
-			ScriptGenerator.this.columnsWithTypes = columnsWithTypes;
-			return this;
-		}
-
-		public Builder setColumns(List<String> columns) {
+		public Builder setColumns(List<TableColumnType> columns) {
 			ScriptGenerator.this.columns = columns;
 			return this;
 		}
