@@ -1,7 +1,7 @@
 -- Создание журнальной таблицы
-<changeSet id="CTP- CREATE TABLE ${tableName}_jrn" author="">
+<changeSet id="CTP- CREATE TABLE ${"${tableName}_JRN"?upper_case}" author="">
   <comment>DDL</comment>
-  <createTable tableName="${tableName}_jrn" remarks="Журнал для таблицы ${tableName}">
+  <createTable tableName="${"${tableName}_JRN"?upper_case}" remarks="Журнал для таблицы ${tableName}">
     <column name="id" type="INTEGER" remarks="Идентификатор записи"/>
     <column name="timestamp" type="TIMESTAMP" remarks="Дата и время создания записи"/>
     <column name="user_id" type="NUMBER(19)" remarks="Пользователь, создавший запись"/>
@@ -20,6 +20,11 @@
       incrementBy="1"
       startWith="1"
       tableName="${tableName}_jrn"/>
+</changeSet>
+
+<changeSet id="CTP- CREATE ${tableName} TRIGGERS" author="">
+  <sqlFile path="db/migration/liquibase/releases/release_<РЕЛИЗ>/sql/CREATE_${tableName}_JRN.sql" stripComments="true"
+           splitStatements="false"/>
 </changeSet>
 
 -- Создание функций
@@ -59,6 +64,7 @@ NEW.id,
   OLD.${column.name}, NEW.${column.name}<#sep>, </#sep>
 </#list>
 );
+ELSE
 END CASE;
 RETURN NEW;
 END;

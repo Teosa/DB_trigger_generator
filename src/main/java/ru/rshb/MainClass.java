@@ -17,6 +17,7 @@ public class MainClass {
 	public static void main(String[] args) {
 		try {
 			String path = args[0];
+			String key = args[1];
 
 			if (path == null || path.trim().length() == 0) {
 				System.out.println("ОШИБКА. НЕОБХОДИМО УКАЗАТЬ ПУТЬ К ФАЙЛУ ИЛИ ПАПКЕ.");
@@ -24,9 +25,9 @@ public class MainClass {
 			}
 
 			if(path.contains(".txt")) {
-				operateFile(path);
+				operateFile(path, key);
 			} else {
-				operateFolder(path);
+				operateFolder(path, key);
 			}
 		} catch (CustomException e) {
 			log.error(e.getMessage(), e);
@@ -37,17 +38,17 @@ public class MainClass {
 		}
 	}
 
-	private static void  operateFolder(String folderPath) {
+	private static void  operateFolder(String folderPath, String key) {
 		File folder = new File(folderPath);
 
 		for(File file : folder.listFiles()) {
 			if(file.getPath().contains(".txt")) {
-				operateFile(file.getPath());
+				operateFile(file.getPath(), key);
 			}
 		}
 	}
 
-	private static void  operateFile(String filePath) {
+	private static void  operateFile(String filePath, String key) {
 		filePath = filePath.replace("\\", "/");
 
 		Matcher outputFolderMatcher = outputFolderPath.matcher(filePath);
@@ -80,6 +81,7 @@ public class MainClass {
 				.setColumns(columns)
 				.setOutputFolder(outputPath)
 				.setTableName(tableName)
+				.setOperation(key)
 				.build()
 				.generate();
 

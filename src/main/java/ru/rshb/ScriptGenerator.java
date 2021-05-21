@@ -24,7 +24,7 @@ public class ScriptGenerator {
 
 	private List<TableColumnType> columns;
 
-	private final static String TEMPLATE_NAME = "script_pattern.ftl";
+	private Operation operation;
 
 	private final Configuration freeMarkerConfig = new Configuration(Configuration.VERSION_2_3_31);
 
@@ -35,7 +35,7 @@ public class ScriptGenerator {
 
 			configFreeMarker();
 
-			Template freeMarkerTemplate = freeMarkerConfig.getTemplate(TEMPLATE_NAME);
+			Template freeMarkerTemplate = freeMarkerConfig.getTemplate(operation.getTemplateName());
 			freeMarkerTemplate.process(createModel(), out);
 
 		} catch (IOException | TemplateException e) {
@@ -64,7 +64,7 @@ public class ScriptGenerator {
 
 	private void configFreeMarker() throws IOException {
 		String resourceFolderPath =
-				new File(ScriptGenerator.class.getClassLoader().getResource(TEMPLATE_NAME).getFile()).getParent();
+				new File(ScriptGenerator.class.getClassLoader().getResource(operation.getTemplateName()).getFile()).getParent();
 		freeMarkerConfig.setDirectoryForTemplateLoading(new File(resourceFolderPath));
 		freeMarkerConfig.setDefaultEncoding("UTF-8");
 	}
@@ -94,11 +94,18 @@ public class ScriptGenerator {
 			return this;
 		}
 
-		public ScriptGenerator build() {
-			ScriptGenerator.this.outputFileName = ScriptGenerator.this.outputFolder + ScriptGenerator.this.tableName + ".sql";
-			return ScriptGenerator.this;
+		public Builder setOperation(String key) {
+			ScriptGenerator.this.operation = Operation.map(key);
+			return this;
 		}
 
+		public ScriptGenerator build() {
+			ScriptGenerator.this.outputFileName =
+					ScriptGenerator.this.outputFolder +
+							operation.name() + "_" +
+							ScriptGenerator.this.tableName + "_JRN.sql";
+			return ScriptGenerator.this;
+		}
 	}
 
 }
